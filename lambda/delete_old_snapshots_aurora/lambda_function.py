@@ -50,11 +50,11 @@ def lambda_handler(event, context):
 
         if is_encrypted_snapshot_available(snapshot, filtered_list):
             logger.debug('%s has encrypted snapshot available deleting' % snapshot)
-            logger.info('deleting %s' % snapshot)
+            logger.info('Deleting %s' % snapshot)
             try:
                 client.delete_db_cluster_snapshot(
-                    dbclustersnapshotidentifier=snapshot)
-            except exception as e:
+                      DBClusterSnapshotIdentifier=snapshot)
+            except Exception as e:
                 pending_delete += 1
                 logger.info(e)
                 logger.info('could not delete %s ' % snapshot)
