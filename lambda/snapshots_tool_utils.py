@@ -32,6 +32,9 @@ _KMS_KEY_DEST_REGION = os.getenv('KMS_KEY_DEST_REGION', 'None').strip()
 
 _KMS_KEY_SOURCE_REGION = os.getenv('KMS_KEY_SOURCE_REGION', 'None').strip()
 
+_DEST_KMSKEYID = os.getenv('DEST_KMSKEYID', 'None').strip()
+
+
 _TIMESTAMP_FORMAT = '%Y-%m-%d-%H-%M'
 
 if os.getenv('REGION_OVERRIDE', 'NO') != 'NO':
@@ -145,10 +148,18 @@ def get_own_snapshots_share(pattern, response):
     for snapshot in response['DBClusterSnapshots']:
         if snapshot['SnapshotType'] == 'manual' and re.search(pattern, snapshot['DBClusterIdentifier']) and snapshot['Engine'] in _SUPPORTED_ENGINES:
             filtered[snapshot['DBClusterSnapshotIdentifier']] = {
-                'Arn': snapshot['DBClusterSnapshotArn'], 'Status': snapshot['Status'], 'DBClusterIdentifier': snapshot['DBClusterIdentifier']}
+                'Arn': snapshot['DBClusterSnapshotArn'], 'Status': snapshot['Status'], 'StorageEncrypted': snapshot['StorageEncrypted'], 'DBClusterIdentifier': snapshot['DBClusterIdentifier']}
+
+            if snapshot['StorageEncrypted'] is True:
+                filtered[snapshot['DBClusterSnapshotIdentifier']
+                         ]['KmsKeyId'] = snapshot['KmsKeyId']    
         elif snapshot['SnapshotType'] == 'manual' and pattern == 'ALL_CLUSTERS' and snapshot['Engine'] in _SUPPORTED_ENGINES:
             filtered[snapshot['DBClusterSnapshotIdentifier']] = {
-                'Arn': snapshot['DBClusterSnapshotArn'], 'Status': snapshot['Status'], 'DBClusterIdentifier': snapshot['DBClusterIdentifier']}
+                'Arn': snapshot['DBClusterSnapshotArn'], 'Status': snapshot['Status'], 'StorageEncrypted': snapshot['StorageEncrypted'], 'DBClusterIdentifier': snapshot['DBClusterIdentifier']}
+
+            if snapshot['StorageEncrypted'] is True:
+                filtered[snapshot['DBClusterSnapshotIdentifier']
+                         ]['KmsKeyId'] = snapshot['KmsKeyId']        
     return filtered
 
 
@@ -195,6 +206,29 @@ def get_own_snapshots_dest(pattern, response):
 
     return filtered
 
+
+def reencrypt(snapshot_identifier, snapshot_object, tags):
+    client = boto3.client('rds', region_name=_REGION)
+
+    if snapshot_object['StorageEncrypted']:
+        logger.info('Copying encrypted snapshot %s locally' %
+                    snapshot_identifier)
+
+        response = client.copy_db_cluster_snapshot(
+            SourceDBClusterSnapshotIdentifier=snapshot_object['Arn'],
+            TargetDBClusterSnapshotIdentifier=snapshot_identifier,
+            KmsKeyId=_DEST_KMSKEYID,
+            Tags=tags['TagList'])
+
+    else:
+        logger.info('Copying snapshot %s locally' % snapshot_identifier)
+
+        response = client.copy_db_cluster_snapshot(
+            SourceDBClusterSnapshotIdentifier=snapshot_object['Arn'],
+            TargetDBClusterSnapshotIdentifier=snapshot_identifier,
+            Tags=tags)
+
+    return response
 
 def copy_local(snapshot_identifier, snapshot_object):
     client = boto3.client('rds', region_name=_REGION)
@@ -340,6 +374,7 @@ def paginate_api_call(client, api_call, objecttype, *args, **kwargs):
     return response
 
 
+
 def search_tag_share(response):
     # Takes a describe_db_cluster_snapshots response and searches for our shareAndCopy tag
     try:
@@ -372,4 +407,5 @@ def search_tag_copied(response):
         return False
 
     return False
+
 
