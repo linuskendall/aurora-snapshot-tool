@@ -53,8 +53,8 @@ def lambda_handler(event, context):
 
         
         if snapshot_object['Status'].lower() == 'available' and search_tag_share(response_tags):
-            if snapshot_object['StorageEncrypted'] is True and snapshot_object['KmsKeyId'] != DEST_KMSKEYID and encrypted_snapshot_identifier not in filtered.keys():
-                # Need to copy prior to encrypt
+            if snapshot_object['StorageEncrypted'] is True and DEST_KMSKEYID is not None and snapshot_object['KmsKeyId'] != DEST_KMSKEYID and encrypted_snapshot_identifier not in filtered.keys():
+                # Need to copy with new key prior to sharing
                 try:
                     
                     reencrypt(encrypted_snapshot_identifier, snapshot_object, response_tags)
