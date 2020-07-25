@@ -407,5 +407,14 @@ def search_tag_copied(response):
         return False
 
     return False
+    
+def is_encrypted_snapshot_available(snapshot_identifier, snapshot_list):
+    encrypted_snapshot_identifier = '%s-%s' % ('encrypted', snapshot_identifier)
+    
+    if encrypted_snapshot_identifier in snapshot_list.keys():
+        if snapshot_list[encrypted_snapshot_identifier]['Status'].lower() == 'available':
+            return True
+    
+    return False
 
 
