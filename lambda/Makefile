@@ -16,11 +16,11 @@
 
 # Override S3 destination by changing this variable or setting it in the
 # environment
-S3DEST?=[YOUR BUCKET HERE]
+S3DEST?=lambda.fmadata.com
 
 # Set these if, for example, you use profiles on the AWS command line
 # or if your 'aws' executable is in a weird place.
-AWSARGS=--region [YOUR REGION] --profile [YOUR PROFILE, or 'default', or remove this]
+AWSARGS=--region us-east-1 --profile fmadata
 AWSCMD=aws
 ZIPCMD=zip
 
