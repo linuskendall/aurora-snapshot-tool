@@ -91,7 +91,6 @@
 				}, "NO"]
 			}]
 		}
-
 	},
 	"Mappings": {
 		"Buckets": {
@@ -332,11 +331,13 @@
 					}]
 				},
 				"ManagedPolicyArns": ["arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"],
-				"Policies": [{
+				"Policies": [
+        {
 					"PolicyName": "inline_policy_snapshots_aurora_rds",
 					"PolicyDocument": {
 						"Version": "2012-10-17",
-						"Statement": [{
+						"Statement": [
+            {
 							"Effect": "Allow",
 							"Action": [
 								"rds:DescribeDBClusters",
@@ -344,39 +345,79 @@
 							],
 							"Resource": "*"
 						},
-							{
-								"Effect": "Allow",
-								"Action": [
-									"rds:CreateDBClusterSnapshot",
-									"rds:DeleteDBClusterSnapshot",
-									"rds:ModifyDBClusterSnapshotAttribute",
-									"rds:DescribeDBClusterSnapshotAttributes",
-									"rds:ListTagsForResource"
-								],
-								"Resource": [{
-									"Fn::Join": [":", ["arn:aws:rds", {
-										"Fn::If": ["RegionOverridden", {
-											"Ref": "SourceRegionOverride"
-										}, {
-											"Ref": "AWS::Region"
-										}]
-									}, "*:cluster:*"]]
-								},
-									{
-										"Fn::Join": [":", ["arn:aws:rds", {
-											"Fn::If": ["RegionOverridden", {
-												"Ref": "SourceRegionOverride"
-											}, {
-												"Ref": "AWS::Region"
-											}]
-										}, "*:cluster-snapshot:*"]]
-									}
-								]
-							}
+						{
+              "Effect": "Allow",
+              "Action": [
+                "rds:CreateDBClusterSnapshot",
+                "rds:DeleteDBClusterSnapshot",
+                "rds:ModifyDBClusterSnapshotAttribute",
+                "rds:CopyDBClusterSnapshot",
+                "rds:DescribeDBClusterSnapshotAttributes",
+                "rds:AddTagsToResource",
+                "rds:ListTagsForResource"
+              ],
+              "Resource": [{
+                "Fn::Join": [":", ["arn:aws:rds", {
+                  "Fn::If": ["RegionOverridden", {
+                    "Ref": "SourceRegionOverride"
+                  }, {
+                    "Ref": "AWS::Region"
+                  }]
+                }, "*:cluster:*"]]
+              },
+                {
+                  "Fn::Join": [":", ["arn:aws:rds", {
+                    "Fn::If": ["RegionOverridden", {
+                      "Ref": "SourceRegionOverride"
+                    }, {
+                      "Ref": "AWS::Region"
+                    }]
+                  }, "*:cluster-snapshot:*"]]
+                }
+              ]
+						}
 						]
 					}
-
-				}]
+				},
+				{
+						"PolicyName": "inline_policy_snapshots_aurora_kms_access",
+						"PolicyDocument": {
+							"Version": "2012-10-17",
+							"Statement": [{
+								"Sid": "AllowUseOfTheKey",
+								"Effect": "Allow",
+								"Action": [
+									"kms:Encrypt",
+									"kms:Decrypt",
+									"kms:ReEncrypt*",
+									"kms:GenerateDataKey*",
+									"kms:DescribeKey"
+								],
+								"Resource": [
+									"arn:aws:kms:*:*:key/*"
+								]
+							},
+								{
+									"Sid": "AllowAttachmentOfPersistentResources",
+									"Effect": "Allow",
+									"Action": [
+										"kms:CreateGrant",
+										"kms:ListGrants",
+										"kms:RevokeGrant"
+									],
+									"Resource": [
+										"arn:aws:kms:*:*:key/*"
+									],
+									"Condition": {
+										"Bool": {
+											"kms:GrantIsForAWSResource": true
+										}
+									}
+								}
+							]
+						}
+				}
+        ]
 			}
 		},
 		"lambdaTakeSnapshotsAurora": {

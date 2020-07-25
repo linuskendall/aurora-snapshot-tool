@@ -286,19 +286,21 @@
 					}]
 				},
 				"ManagedPolicyArns": ["arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"],
-				"Policies": [{
+				"Policies": [
+        {
 					"PolicyName": "inline_policy_snapshots_aurora_rds",
 					"PolicyDocument": {
 						"Version": "2012-10-17",
-						"Statement": [{
+						"Statement": [
+            {
 							"Effect": "Allow",
 							"Action": [
 								"rds:DescribeDBClusters",
 								"rds:DescribeDBClusterSnapshots"
 							],
 							"Resource": "*"
-						},
-							{
+            },
+            {
 								"Effect": "Allow",
 								"Action": [
 									"rds:CreateDBClusterSnapshot",
@@ -306,19 +308,18 @@
 									"rds:ModifyDBClusterSnapshotAttribute",
 									"rds:CopyDBClusterSnapshot",
 									"rds:DescribeDBClusterSnapshotAttributes",
+									"rds:AddTagsToResource",
 									"rds:ListTagsForResource"
 								],
 								"Resource": [
 									"arn:aws:rds:*:*:cluster:*",
 									"arn:aws:rds:*:*:cluster-snapshot:*"
 								]
-
-							}
+            }
 						]
 					}
-
 				},
-					{
+				{
 						"PolicyName": "inline_policy_snapshots_aurora_kms_access",
 						"PolicyDocument": {
 							"Version": "2012-10-17",
@@ -355,7 +356,7 @@
 								}
 							]
 						}
-					}
+				}
 				]
 			}
 		},
