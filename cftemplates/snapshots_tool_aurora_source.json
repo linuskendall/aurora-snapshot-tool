@@ -21,6 +21,11 @@
 			"Default": "000000000000",
 			"Description": "Destination account with no dashes."
 		},
+		"DestinationKMSKey": {
+			"Type": "String",
+			"Default": "None",
+			"Description": "Set to the KMS Key Id in the destination region to re-encrypt encrypted snapshots. Leave None if you are not using encryption"
+		},
 		"ShareSnapshots": {
 			"Type": "String",
 			"Default": "TRUE",
@@ -498,6 +503,9 @@
 						"DEST_ACCOUNT": {
 							"Ref": "DestinationAccount"
 						},
+            "DEST_KMSKEYID": {
+              "Ref": "DestinationKMSKey"
+            },
 						"LOG_LEVEL": {
 							"Ref": "LogLevel"
 						},

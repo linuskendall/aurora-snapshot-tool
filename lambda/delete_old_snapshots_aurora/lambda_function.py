@@ -47,7 +47,20 @@ def lambda_handler(event, context):
 
         creation_date = get_timestamp(snapshot, filtered_list)
 
-        if creation_date:
+
+        if is_encrypted_snapshot_available(snapshot, filtered_list):
+            logger.debug('%s has encrypted snapshot available deleting' % snapshot)
+            logger.info('deleting %s' % snapshot)
+            try:
+                client.delete_db_cluster_snapshot(
+                    dbclustersnapshotidentifier=snapshot)
+            except exception as e:
+                pending_delete += 1
+                logger.info(e)
+                logger.info('could not delete %s ' % snapshot)
+
+
+        elif creation_date:
 
             difference = datetime.now() - creation_date
 
